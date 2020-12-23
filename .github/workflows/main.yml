@@ -14,16 +14,16 @@ jobs:
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.6.0
         with:
-          dotnet-version: '5.0.100'
+          dotnet-version: '3.1'
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'  
       # publishes Blazor project to the release-folder
       - name: Publish .NET Core Project
-        run: dotnet publish "Reborn Tools.csproj" -c Release -o release --nologo
+        run: dotnet publish "kauliuku-lentele" -c Release -o release --nologo
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      # changes the base-tag in index.html from '/' to 'BlazorGitHubPagesDemo' to match GitHub Pages repository subdirectory
-      - name: Change base-tag in index.html from / to BlazorGitHubPagesDemo
+      # changes the base-tag in index.html from '/'
+      - name: Change base-tag in index.html from /
         run: sed -i 's/<base href="\/" \/>/<base href="\/reborn-tools\/" \/>/g' release/wwwroot/index.html
       # copy index.html to 404.html to serve the same file when a file is not found
       - name: copy index.html to 404.html
