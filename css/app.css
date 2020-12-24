@@ -1,23 +1,27 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 .big-border-right {
-    border-right: 4px inset black !important;
+    border-right: 4px inset white !important;
 }
 
 .big-border-top {
-    border-top: 4px inset black !important;
+    border-top: 4px inset white !important;
 }
 
 .select-cell.fail {
-    background-color: rgb(255, 230, 230);
+    background-color: rgb(255, 126, 126);
 }
 
 .select-cell.success {
-    background-color: rgb(230, 255, 238);
+    background-color: rgb(51, 130, 76);
 }
 
 .select-cell.unplayed {
-    background-color: rgb(138, 166, 197);
+    background-color: rgb(3, 23, 45);
+}
+
+.table-select option {
+    background-color: rgb(69, 77, 85);
 }
 
 .table-select {
@@ -25,7 +29,7 @@
     display: block;
     font-size: 16px;
     font-weight: bold;
-    color: black;
+    color: white;
     width: 100%;
     padding: 0.1rem 0.2rem;
     min-width: 80px;
