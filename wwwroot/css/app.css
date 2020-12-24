@@ -17,25 +17,18 @@
 }
 
 .select-cell.unplayed {
-    background-color: rgb(230, 242, 255);
-}
-
-.table-select.unplayed {
-    font-size: 12px;
-    font-weight: lighter;
-    color: black;
-    background-color: transparent;
+    background-color: rgb(138, 166, 197);
 }
 
 .table-select {
     background-color: transparent;
     display: block;
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: bold;
     color: black;
     line-height: 1.3;
     width: 100%;
-    min-width: 60px;
+    min-width: 80px;
     max-width: 100%;
     height: 30px;
     max-height: 100%;
