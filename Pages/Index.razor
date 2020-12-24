@@ -1,7 +1,70 @@
 ﻿@page "/"
+@inject ILocalStorageService localStorage
 
-<h1>Hello, world!</h1>
+<h1>Žaidimai</h1>
+@if (loading)
+{
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @errorMessage
+    </div>
+}
+else
+{
+    <NavLink class="btn btn-success mt-3" href="create">Sukurti naują žaidimą</NavLink>
+    <table class="table mt-2 text-center">
+        <thead>
+            <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Žaidėjai</th>
+                <th scope="col">Pirmauja</th>
+                <th scope="col">Baigta</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < userState.Games.Count; i++)
+            {
+                int index = i;
+                Game game = userState.Games[index];
+                <tr>
+                    <td>@game.Date.ToShortDateString()</td>
+                    <td>@game.UserColumns.Length</td>
+                    <td>@game.GetLeader()</td>
+                    <td>@(Math.Truncate(game.GetCompletion() * 100))%</td>
+                    <td><NavLink class="btn btn-outline-success" href="@("play/" + game.ID)">Žaisti</NavLink></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
-Welcome to your new app.
+@code {
+    private bool loading = true;
+    private string errorMessage = null;
+    private UserState userState;
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            userState = await UserState.Load(localStorage);
+            foreach (UserColumn col in userState.Games.SelectMany(g => g.UserColumns))
+            {
+                col.RecalculateScore();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            errorMessage = "Įvyko klaida!";
+        }
+
+        loading = false;
+    }
+}

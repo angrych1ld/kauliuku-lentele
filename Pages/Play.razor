@@ -1,0 +1,152 @@
+﻿@page "/play/{ID:int}"
+@inject ILocalStorageService localStorage
+
+
+@if (loading)
+{
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @errorMessage
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table mt-2 text-center table-bordered">
+            <thead>
+                <tr>
+                    @foreach (UserColumn col in game.UserColumns)
+                    {
+                        <th colspan="@GameDef.Grid.GetLength(1)" class="@(game.UserColumns.Last() != col ? "big-border-right" : "")">
+                            <h3 class="m-0 p-0">
+                                @col.UserName
+                                <br />
+                                @col.Score
+                            </h3>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < GameDef.Grid.GetLength(0); i++)
+                {
+                    int local_i = i;
+                    <tr>
+                        @for (int j = 0; j < game.UserColumns.Length; j++)
+                        {
+                            int local_j = j;
+                            @for (int k = 0; k < GameDef.Grid.GetLength(1); k++)
+                            {
+                                int local_k = k;
+                                <td class="@(SelectCellClass(local_j, local_i, local_k))">
+                                    <select class="@SelectClass(local_j, local_i, local_k)"
+                                            @bind="game.UserColumns[local_j].GameValues[local_k + local_i * GameDef.Grid.GetLength(1)]"
+                                            @bind:event="oninput"
+                                            @onchange="@(() => OnSelectInput(local_j, local_i, local_k))">
+                                        @for (int z = 0; z < GameDef.Grid[i, k].PossibleStates.Length; z++)
+                                        {
+                                            int local_z = z;
+                                            <option value="@local_z">@GameDef.Grid[i, k].PossibleStates[z].Name</option>
+                                        }
+                                    </select>
+                                </td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public int ID { get; set; }
+
+    private bool loading = true;
+    private string errorMessage = null;
+    private UserState userState;
+    private Game game;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            userState = await UserState.Load(localStorage);
+            game = userState.Games.FirstOrDefault(g => g.ID == ID);
+
+            foreach (UserColumn col in game.UserColumns)
+            {
+                col.RecalculateScore();
+            }
+
+            if (game == null)
+            {
+                errorMessage = "Nepavyko rasti žaidimo!";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            errorMessage = "Įvyko klaida!";
+        }
+
+        loading = false;
+    }
+
+    private async Task OnSelectInput(int playerIndex, int rowIndex, int colIndex)
+    {
+        await userState.Save(localStorage);
+        game.UserColumns[playerIndex].RecalculateScore();
+        Console.WriteLine(playerIndex + " " + rowIndex + " " + colIndex);
+        Console.WriteLine(game.UserColumns[playerIndex].GameValues[colIndex + rowIndex * GameDef.Grid.GetLength(1)]);
+    }
+
+    private string SelectClass(int playerIndex, int rowIndex, int colIndex)
+    {
+        string c = "table-select";
+        if (game.UserColumns[playerIndex].GameValues[colIndex + rowIndex * GameDef.Grid.GetLength(1)] == 0)
+        {
+            c += " unplayed";
+        }
+        return c;
+    }
+
+    private string SelectCellClass(int playerIndex, int rowIndex, int colIndex)
+    {
+        string c = "select-cell p-0";
+
+        if (game.UserColumns[playerIndex].GameValues[colIndex + rowIndex * GameDef.Grid.GetLength(1)] != 0)
+        {
+            CellState state = GameDef.Grid[rowIndex, colIndex].PossibleStates[game.UserColumns[playerIndex].GameValues[colIndex + rowIndex * GameDef.Grid.GetLength(1)]];
+            if (state.Name.Contains("-") || state.Name.Contains("X"))
+            {
+                c += " fail";
+            }
+            else
+            {
+                c += " success";
+            }
+        }
+        else
+        {
+            c += " unplayed";
+        }
+
+        if(playerIndex != game.UserColumns.Length -1 && colIndex == GameDef.Grid.GetLength(1) -1)
+        {
+            c += " big-border-right";
+        }
+
+        if(rowIndex == 6 || rowIndex == 9)
+        {
+            c += " big-border-top";
+        }
+
+        return c;
+    }
+}

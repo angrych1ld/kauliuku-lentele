@@ -7,8 +7,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
 
-namespace kauliuku_lentele
+namespace KauliukuLentele
 {
     public class Program
     {
@@ -18,6 +19,7 @@ namespace kauliuku_lentele
             builder.RootComponents.Add<App>("app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddBlazoredLocalStorage();
 
             await builder.Build().RunAsync();
         }
