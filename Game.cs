@@ -11,7 +11,7 @@ namespace KauliukuLentele
         public DateTime Date { get; set; }
         public UserColumn[] UserColumns { get; set; }
 
-        public string GetLeader()
+        public (string, int) GetLeader()
         {
             string leader = "not-found";
             int max = -999;
@@ -23,7 +23,7 @@ namespace KauliukuLentele
                     leader = col.UserName;
                 }
             }
-            return leader;
+            return (leader, max);
         }
 
         public double GetCompletion()

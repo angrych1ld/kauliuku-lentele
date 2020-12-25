@@ -35,7 +35,7 @@ else
                 <tr>
                     <td>@game.Date.ToShortDateString()</td>
                     <td>@game.UserColumns.Length</td>
-                    <td>@game.GetLeader()</td>
+                    <td>@game.GetLeader().Item1 - @game.GetLeader().Item2</td>
                     <td>@(Math.Truncate(game.GetCompletion() * 100))%</td>
                     <td><NavLink class="btn btn-outline-success" href="@("play/" + game.ID)">Žaisti</NavLink></td>
                 </tr>
