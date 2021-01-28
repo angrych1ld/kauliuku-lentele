@@ -125,6 +125,11 @@ namespace KauliukuLentele
             }
         };
 
+        public static int LastStateValue(int rowIndex, int colIndex)
+        {
+            return Grid[rowIndex, colIndex].PossibleStates.Length - 1;
+        }
+
         private static CellDef NC(params (string name, int value)[] def)
         {
             return new CellDef { PossibleStates = def.Select(d => new CellState { Name = d.name, Value = d.value }).ToArray() };
@@ -179,7 +184,7 @@ namespace KauliukuLentele
             {
                 for (int j = 1; j <= 6; j++)
                 {
-                    possiblePairValues.Add(i*2 + j*2);
+                    possiblePairValues.Add(i * 2 + j * 2);
                 }
             }
 
@@ -200,7 +205,7 @@ namespace KauliukuLentele
             {
                 for (int j = 1; j <= 6; j++)
                 {
-                    possiblePairValues.Add(i*2 + j*2);
+                    possiblePairValues.Add(i * 2 + j * 2);
                 }
             }
 

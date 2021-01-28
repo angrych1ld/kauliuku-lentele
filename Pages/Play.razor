@@ -100,10 +100,109 @@ else
 
     private async Task OnSelectInput(int playerIndex, int rowIndex, int colIndex)
     {
-        await userState.Save(localStorage);
-        game.UserColumns[playerIndex].RecalculateScore();
-        Console.WriteLine(playerIndex + " " + rowIndex + " " + colIndex);
-        Console.WriteLine(game.UserColumns[playerIndex].GameValues[colIndex + rowIndex * GameDef.Grid.GetLength(1)]);
+        RecalculateBonusStates();
+
+        userState.Save(localStorage).ConfigureAwait(false);
+
+        foreach (UserColumn col in game.UserColumns)
+        {
+            col.RecalculateScore();
+        }
+    }
+
+    private void RecalculateBonusStates()
+    {
+        // Handle vertical ones first
+        for (int k = 0; k < game.UserColumns.Length; k++)
+        {
+            for (int j = 0; j < GameDef.Grid.GetLength(1) - 1; j++)
+            {
+                if (!HasPoints(k, GameDef.Grid.GetLength(0) - 1, j))
+                {
+                    bool shouldBeMinus = AnyOtherPlayerHasPoints(k, GameDef.Grid.GetLength(0) - 1, j) || HasMinus(k, j, false);
+                    if (shouldBeMinus != GridCellStateName(k, GameDef.Grid.GetLength(0) - 1, j).Equals("X"))
+                    {
+                        game.UserColumns[k].GameValues[j + (GameDef.Grid.GetLength(0) - 1) * GameDef.Grid.GetLength(1)] =
+                            shouldBeMinus
+                                ? GameDef.LastStateValue(GameDef.Grid.GetLength(0) - 1, j)
+                                : 0;
+
+                        StateHasChanged();
+                    }
+                }
+            }
+        }
+
+        // Now do horizontal ones
+        for (int k = 0; k < game.UserColumns.Length; k++)
+        {
+            for (int i = 0; i < GameDef.Grid.GetLength(0); i++)
+            {
+                if (!HasPoints(k, i, GameDef.Grid.GetLength(1) - 1))
+                {
+                    bool shouldBeMinus = AnyOtherPlayerHasPoints(k, i, GameDef.Grid.GetLength(1) - 1) || HasMinus(k, i, true);
+                    if (shouldBeMinus != GridCellStateName(k, i, GameDef.Grid.GetLength(1) - 1).Equals("X"))
+                    {
+                        game.UserColumns[k].GameValues[GameDef.Grid.GetLength(1) - 1 + i * GameDef.Grid.GetLength(1)] =
+                            shouldBeMinus
+                                ? GameDef.LastStateValue(i, GameDef.Grid.GetLength(1) - 1)
+                                : 0;
+
+                        StateHasChanged();
+                    }
+                }
+            }
+        }
+    }
+
+    private string GridCellStateName(int playerIndex, int rowIndex, int colIndex)
+    {
+        return GameDef.Grid[rowIndex, colIndex].PossibleStates[
+            game.UserColumns[playerIndex].GameValues[colIndex + rowIndex * GameDef.Grid.GetLength(1)]].Name;
+    }
+
+    private bool AnyOtherPlayerHasPoints(int playerIndex, int rowIndex, int colIndex)
+    {
+        for (int i = 0; i < game.UserColumns.Length; i++)
+        {
+            if (i != playerIndex && HasPoints(i, rowIndex, colIndex))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasPoints(int playerIndex, int rowIndex, int colIndex)
+    {
+        return int.TryParse(GridCellStateName(playerIndex, rowIndex, colIndex), out int can);
+    }
+
+    private bool HasMinus(int playerIndex, int rowColIndex, bool isRow)
+    {
+        if (isRow)
+        {
+            for (int j = 0; j < GameDef.Grid.GetLength(1) - 1; j++)
+            {
+                if (GridCellStateName(playerIndex, rowColIndex, j).StartsWith("-") || GridCellStateName(playerIndex, rowColIndex, j).StartsWith("X"))
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < GameDef.Grid.GetLength(0) - 1; i++)
+            {
+                if (GridCellStateName(playerIndex, i, rowColIndex).StartsWith("-") || GridCellStateName(playerIndex, i, rowColIndex).StartsWith("X"))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private string SelectClass(int playerIndex, int rowIndex, int colIndex)
@@ -137,12 +236,12 @@ else
             c += " unplayed";
         }
 
-        if(playerIndex != game.UserColumns.Length -1 && colIndex == GameDef.Grid.GetLength(1) -1)
+        if (playerIndex != game.UserColumns.Length - 1 && colIndex == GameDef.Grid.GetLength(1) - 1)
         {
             c += " big-border-right";
         }
 
-        if(rowIndex == 6 || rowIndex == 9)
+        if (rowIndex == 6 || rowIndex == 9)
         {
             c += " big-border-top";
         }
