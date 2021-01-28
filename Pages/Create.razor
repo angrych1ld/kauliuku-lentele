@@ -55,6 +55,19 @@ else
         </div>
     }
 
+    <br />
+    <hr />
+    <br />
+    <select class="form-control" @bind="@copyPreviousGameOption"
+            @bind:event="oninput"
+            @onchange="@(() => OnSelectInput(copyPreviousGameOption - 1))">
+        <option value="0">Praeiti žaidimai...</option>
+        @for (int i = 1; i < copyPreviousGamesOptions.Count + 1; i++)
+        {
+            int x = i;
+            <option value="@x">@string.Join(", ", copyPreviousGamesOptions[i - 1])</option>
+        }
+    </select>
 }
 
 @code {
@@ -62,6 +75,8 @@ else
     private string errorMessage = null;
     private UserState userState;
 
+    private List<string[]> copyPreviousGamesOptions = new List<string[]>();
+    private int copyPreviousGameOption = 0;
 
     private string formError;
 
@@ -78,6 +93,22 @@ else
         try
         {
             userState = await UserState.Load(localStorage);
+            copyPreviousGamesOptions = userState.Games.Select(g => g.UserColumns.Select(u => u.UserName.Trim()).ToArray()).Distinct().ToList();
+
+            // Remove repeating values
+            HashSet<string> e = new HashSet<string>();
+            for (int i = 0; i < copyPreviousGamesOptions.Count; i++)
+            {
+                if (e.Contains(string.Join(' ', copyPreviousGamesOptions[i])))
+                {
+                    copyPreviousGamesOptions.RemoveAt(i);
+                    i--;
+                }
+                else
+                {
+                    e.Add(string.Join(' ', copyPreviousGamesOptions[i]));
+                }
+            }
         }
         catch
         {
@@ -88,9 +119,23 @@ else
         PlayerCountChanged();
     }
 
+    private void OnSelectInput(int op)
+    {
+        string[] players = copyPreviousGamesOptions[op];
+
+        playerCount = players.Length.ToString();
+        for (int i = 0; i < playerNames.Count; i++)
+        {
+            playerNames[i] = players[i];
+        }
+
+
+        copyPreviousGameOption = 0;
+        StateHasChanged();
+    }
+
     private void PlayerCountChanged()
     {
-        Console.WriteLine("as");
         formError = null;
 
         int pCount = 0;
